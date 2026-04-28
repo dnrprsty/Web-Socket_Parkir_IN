@@ -58,3 +58,10 @@
    Buka file `index.html` di browser lu.
 
 ---
+
+## Dokumentasi dan Artikel
+Artikel: https://medium.com/@danurwp70/implementasi-protokol-websocket-untuk-sistem-notifikasi-real-time-pada-manajemen-ketersediaan-slot-de8cb02e8671
+
+**Hasil Cek Duplikasi**
+![Duplicheck](Assets/turnit1.png)
+![Duplicheck](Assets/turnit2.png)
