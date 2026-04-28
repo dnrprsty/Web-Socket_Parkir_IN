@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parkir-In | Real-Time Monitoring</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white font-sans min-h-screen flex items-center justify-center p-6">
+
+    <div class="max-w-md w-full bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-700">
+        <div class="bg-blue-600 p-6 text-center">
+            <i class="fas fa-parking text-4xl mb-2"></i>
+            <h1 class="text-2xl font-bold tracking-tight">Parkir-In Monitor</h1>
+            <p class="text-blue-100 text-sm opacity-80">Eksperimen WebSocket Real-Time</p>
+        </div>
+
+        <div class="p-8">
+            <div id="status-card" class="bg-gray-700 rounded-2xl p-6 transition-all duration-500 border-l-8 border-gray-500 shadow-inner">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-gray-400 uppercase text-xs font-black tracking-widest">Nama Slot</span>
+                    <span id="label-waktu" class="text-gray-500 text-[10px]">Menunggu Koneksi...</span>
+                </div>
+                
+                <h2 id="slot-name" class="text-3xl font-bold mb-1 text-gray-300">--</h2>
+                <div class="flex items-center gap-2">
+                    <div id="status-indicator" class="w-3 h-3 rounded-full bg-gray-500 animate-pulse"></div>
+                    <p id="status-text" class="text-lg font-medium text-gray-400 italic">Mencoba terhubung ke server...</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 text-center">
+                    <p class="text-gray-400 text-xs">Lantai</p>
+                    <p class="font-bold">1 (Utama)</p>
+                </div>
+                <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 text-center">
+                    <p class="text-gray-400 text-xs">Tipe</p>
+                    <p class="font-bold">Mobil/Motor</p>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <p class="text-gray-500 text-xs text-center">
+                    <i class="fas fa-info-circle mr-1"></i> Data diperbarui otomatis via WebSocket
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inisialisasi WebSocket ke server lokal
+        const socket = new WebSocket('ws://localhost:8080');
+
+        const card = document.getElementById('status-card');
+        const slotName = document.getElementById('slot-name');
+        const statusText = document.getElementById('status-text');
+        const statusIndicator = document.getElementById('status-indicator');
+        const labelWaktu = document.getElementById('label-waktu');
+
+        socket.onopen = () => {
+            statusText.innerText = "Terhubung. Menunggu data...";
+            statusIndicator.classList.remove('bg-gray-500');
+            statusIndicator.classList.add('bg-blue-500');
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            // Update teks UI
+            slotName.innerText = `Slot ${data.slot}`;
+            statusText.innerText = data.status;
+            labelWaktu.innerText = `Update: ${data.waktu}`;
+
+            // Logika perubahan warna tema berdasarkan status
+            if (data.status === "Tersedia") {
+                // Tema Hijau (Tersedia)
+                card.classList.remove('border-gray-500', 'border-red-500');
+                card.classList.add('border-emerald-500', 'bg-emerald-900/20');
+                statusIndicator.classList.remove('bg-blue-500', 'bg-red-500');
+                statusIndicator.classList.add('bg-emerald-500');
+                statusText.classList.replace('text-gray-400', 'text-emerald-400');
+                slotName.classList.replace('text-gray-300', 'text-white');
+            } else {
+                // Tema Merah (Terisi)
+                card.classList.remove('border-gray-500', 'border-emerald-500');
+                card.classList.add('border-red-500', 'bg-red-900/20');
+                statusIndicator.classList.remove('bg-blue-500', 'bg-emerald-500');
+                statusIndicator.classList.add('bg-red-500');
+                statusText.classList.replace('text-gray-400', 'text-red-400');
+                slotName.classList.replace('text-gray-300', 'text-white');
+            }
+        };
+
+        socket.onclose = () => {
+            statusText.innerText = "Koneksi Terputus";
+            statusIndicator.classList.replace('bg-emerald-500', 'bg-gray-500');
+            statusIndicator.classList.replace('bg-red-500', 'bg-gray-500');
+        };
+    </script>
+</body>
+</html>
